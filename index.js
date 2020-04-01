@@ -11,75 +11,116 @@ const questions = [
     {
         type: 'input',
         name: 'title',
-        message: 'What is the title of your project?'
+        message: "What is your project's title?",
+        validate: function (value) {
+            var pass = (value !== ""
+            );
+            if (pass) {
+                return true;
+            }
+
+            return 'Please enter a title';
+        }
     },
     {
         type: 'input',
         name: 'description',
-        message: 'Please enter a description of you project:',
-        default: 'My project is the best project of all projects'
+        message: 'What would you like to call the Description section?',
+        default: 'Description'
     },
     {
         type: 'input',
         name: 'tableOfContents',
-        message: 'What would you like in the Table of Contents?',
+        message: 'What would you like to call the Table of Contents?',
         default: 'Table of Contents'
     },
     {
         type: 'input',
         name: 'installation',
-        message: 'What are the installation instructions?'
+        message: 'What would you like to call the Installation section?',
+        default: 'Installation'
     },
     {
         type: 'input',
         name: 'usage',
-        message: 'Please enter any usage limits:',
-        default: 'Free to use'
+        message: 'What would you like to call the Usage section?',
+        default: 'Usage'
     },
     {
         type: 'input',
         name: 'license',
-        message: 'Would you like to add a license?',
+        message: 'What license would you like to use?',
         default: 'MIT'
     },
     {
         type: 'input',
         name: 'contributing',
-        message: 'Please list any contributors to the project:',
-        default: "None"
+        message: 'What would you like to call the contributing section?',
+        default: 'Contributing'
     },
     {
         type: 'input',
         name: 'tests',
-        message: 'Would you like to add any tests to the Readme?',
-        default: "None"
+        message: 'What would you like to call the Tests section?',
+        default: 'Tests'
+    },
+    {
+        type: 'input',
+        name: 'email',
+        message: 'What is your email address?'
     }
 
 ]
 
-
 inquirer.prompt(questions).then(answers => {
-        
-        console.log(answers);
-        const answersformat = answers.map(function(answer) {
-            return answer.name;
-          });
-        const queryUrl = `https://api.github.com/users/${answers.username}?`;
+    const newUserFile = "output/README.md"
+    const newReadme = `# ${answers.title}
+    
+# ${answers.tableOfContents}
+#### [${answers.description}](#${answers.description})    
+#### [${answers.installation}](#${answers.installation})    
+#### [${answers.usage}](#${answers.usage})    
+#### [License](#license)
+#### [${answers.contributing}](#${answers.contributing})    
+#### [${answers.tests}](#${answers.tests})    
 
-        axios.get(queryUrl).then(function (res) {
-            console.log(res.data)
-            const avatar = res.data.avatar_url;
-            console.log(avatar)
-            const avatarImg = `![Avatar](${avatar})`
+# ${answers.description}
+    
+# ${answers.installation}
+    
+# ${answers.usage}
 
+# License
+![badge](https://img.shields.io/badge/license-${answers.license}-brightgreen)
+    
+# ${answers.contributing}
+    
+# ${answers.tests}
 
-            fs.writeFile("newreadme.md", avatarImg, function (err) {
-                if (err) {
-                    throw err;
-                }
-
-
-            })
-            console.log("newreadme.md");
-        })
+`
+    fs.writeFile(newUserFile, newReadme, function (err) {
+        if (err) {
+            throw err
+        }
     })
+
+    const queryUrl = `https://api.github.com/users/${answers.username}?`;
+
+    axios.get(queryUrl).then(function (res) {
+        const avatar = res.data.avatar_url;
+        let email = (res.data.email) ? res.data.email : answers.email;
+        const picAndEmail = `![Avatar](${avatar})
+
+##### Email: 
+${email}
+
+`
+        fs.appendFile(newUserFile, picAndEmail, function (err) {
+            if (err) {
+                throw err;
+            }
+            console.log("README ready to go!")
+        })
+
+    })
+})
